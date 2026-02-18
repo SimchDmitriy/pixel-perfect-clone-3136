@@ -57,6 +57,18 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "header-bg": "hsl(var(--header-bg))",
+        "column-bg": "hsl(var(--column-bg))",
+        "card-surface": "hsl(var(--card-surface))",
+        "card-hover": "hsl(var(--card-hover))",
+        "badge-green": "hsl(var(--badge-green))",
+        "badge-red": "hsl(var(--badge-red))",
+        "badge-yellow": "hsl(var(--badge-yellow))",
+        "badge-purple": "hsl(var(--badge-purple))",
+        "text-link": "hsl(var(--text-link))",
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        "right-panel-bg": "hsl(var(--right-panel-bg))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,20 +77,12 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
