@@ -1,66 +1,95 @@
-import React from 'react';
-import { X, Plus, MoreVertical, CheckCircle } from 'lucide-react';
-import { mockChildCards } from '@/data/mockData';
-import { KanbanCard } from './KanbanCard';
+import React, { useState } from 'react';
+import { X, Users, Clock, History, FileText, Settings, Ban, Globe, Share2, Bot } from 'lucide-react';
+import { rightSidebarIcons } from '@/data/mockData';
 
-interface RightPanelProps {
-  onClose: () => void;
-}
+type PanelId = string | null;
 
-export const RightPanel: React.FC<RightPanelProps> = ({ onClose }) => {
+export const RightPanel: React.FC = () => {
+  const [activePanel, setActivePanel] = useState<PanelId>(null);
+
+  const iconComponents: Record<string, React.ReactNode> = {
+    users: <Users className="h-4 w-4" />,
+    time: <Clock className="h-4 w-4" />,
+    history: <History className="h-4 w-4" />,
+    docs: <FileText className="h-4 w-4" />,
+    settings: <Settings className="h-4 w-4" />,
+    block: <Ban className="h-4 w-4" />,
+    globe: <Globe className="h-4 w-4" />,
+    share: <Share2 className="h-4 w-4" />,
+    automation: <Bot className="h-4 w-4" />,
+  };
+
   return (
-    <div className="w-[380px] border-l border-border bg-right-panel-bg flex flex-col shrink-0 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-foreground font-medium text-sm">⊞ Дочки чек-листа</span>
-        </div>
-        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Child board columns */}
-      <div className="flex-1 overflow-auto p-3">
-        <div className="flex gap-3 min-w-max">
-          {mockChildCards.map((col) => {
-            const isOverWip = col.wipLimit && col.wipCurrent && col.wipCurrent >= col.wipLimit;
-            return (
-              <div key={col.id} className="w-[160px] shrink-0">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-xs text-foreground font-medium">{col.title}</span>
-                  <span
-                    className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${
-                      isOverWip ? 'bg-badge-red text-primary-foreground' : 'bg-secondary text-muted-foreground'
-                    }`}
-                  >
-                    {col.wipCurrent}
-                  </span>
+    <>
+      {/* Slide-out panel */}
+      {activePanel && (
+        <div className="w-[300px] border-l border-border bg-popover flex flex-col shrink-0 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <span className="text-foreground font-medium text-sm capitalize">
+              {rightSidebarIcons.find(i => i.id === activePanel)?.label || activePanel}
+            </span>
+            <button onClick={() => setActivePanel(null)} className="text-muted-foreground hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex-1 p-4">
+            {activePanel === 'users' && (
+              <div>
+                <input
+                  placeholder="Введите имя, id или email"
+                  className="w-full rounded bg-secondary px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none border border-border focus:border-primary mb-3"
+                />
+                <p className="text-xs text-muted-foreground">Доступ выдан выше</p>
+                <p className="text-xs text-muted-foreground mt-4">Деактивированные пользователи</p>
+                <button className="mt-2 text-xs text-primary hover:text-primary/80">ЗАГРУЗИТЬ СПИСОК</button>
+              </div>
+            )}
+            {activePanel === 'share' && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Внутренняя ссылка на пространство</p>
+                <div className="flex items-center gap-2 rounded bg-secondary px-3 py-2 text-sm text-foreground">
+                  <span className="truncate">https://demo4presale.kaiten.ru/s</span>
+                  <button className="text-muted-foreground hover:text-foreground shrink-0">📋</button>
                 </div>
-                <div className="space-y-2">
-                  {col.cards.map((card) => (
-                    <KanbanCard key={card.id} card={card} compact />
-                  ))}
-                  {col.cards.length === 0 && (
-                    <div className="flex h-12 items-center justify-center rounded border border-dashed border-border text-[10px] text-muted-foreground">
-                      Пусто
-                    </div>
-                  )}
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-sm text-foreground">Публичный доступ</span>
+                  <button className="w-10 h-5 rounded-full bg-secondary relative">
+                    <span className="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-muted-foreground transition-transform" />
+                  </button>
                 </div>
               </div>
-            );
-          })}
+            )}
+            {activePanel === 'settings' && (
+              <div className="text-xs text-muted-foreground">
+                Настройки пространства
+              </div>
+            )}
+            {activePanel !== 'users' && activePanel !== 'share' && activePanel !== 'settings' && (
+              <div className="text-xs text-muted-foreground">
+                Содержимое панели «{rightSidebarIcons.find(i => i.id === activePanel)?.label}»
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Right sidebar icons */}
-      <div className="absolute right-0 top-11 bottom-0 w-10 border-l border-border bg-header-bg flex flex-col items-center py-3 gap-3">
-        {['👥', '⏱️', '📋', '⚙️', '🌐', '🚫', '🔗', '🤝', '🔧'].map((icon, i) => (
-          <button key={i} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
-            {icon}
+      {/* Vertical icon strip */}
+      <div className="w-10 border-l border-border bg-card flex flex-col items-center py-3 gap-2 shrink-0">
+        {rightSidebarIcons.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActivePanel(activePanel === item.id ? null : item.id)}
+            className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
+              activePanel === item.id
+                ? 'bg-secondary text-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+            }`}
+            title={item.label}
+          >
+            {iconComponents[item.id] || <span className="text-sm">{item.emoji}</span>}
           </button>
         ))}
       </div>
-    </div>
+    </>
   );
 };
