@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Plus, MoreVertical, Link2, ChevronUp,
   LayoutDashboard, LayoutList, Grid3X3,
   Archive, Filter, Star, Calendar, BarChart3
 } from 'lucide-react';
-import { mockBoards, mockChildBoard } from '@/data/mockData';
+import { mockBoards, mockChildBoard, mockSearchWorkBoard } from '@/data/mockData';
 import { KanbanCard } from '@/components/board/KanbanCard';
 import { FilterPanel } from '@/components/board/FilterPanel';
 import { RightPanel } from '@/components/board/RightPanel';
@@ -13,12 +14,32 @@ import type { KaitenColumn, KaitenBoard } from '@/data/mockData';
 type ViewMode = 'board' | 'list' | 'table' | 'timeline';
 
 const BoardPage: React.FC = () => {
+  const { spaceId } = useParams();
+  const currentSpaceId = spaceId ?? 'parent-child';
   const [filterOpen, setFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('board');
+  const boardsConfig = useMemo(() => {
+    if (currentSpaceId === 'work-search') {
+      return {
+        mode: 'single' as const,
+        mainBoards: [mockSearchWorkBoard],
+      };
+    }
+    // default: parent-child
+    return {
+      mode: 'parent-child' as const,
+      parentBoard: mockBoards.find((b) => b.id === 'board-parent')!,
+      moveBoard: mockBoards.find((b) => b.id === 'board-move')!,
+      childBoard: mockChildBoard,
+    };
+  }, [currentSpaceId]);
+
   const [boardStates, setBoardStates] = useState<Record<string, boolean>>(() => {
     const s: Record<string, boolean> = {};
-    mockBoards.forEach(b => { s[b.id] = b.collapsed ?? false; });
-    s[mockChildBoard.id] = mockChildBoard.collapsed ?? false;
+    // initialize with all known boards
+    [...mockBoards, mockChildBoard, mockSearchWorkBoard].forEach((b) => {
+      s[b.id] = b.collapsed ?? false;
+    });
     return s;
   });
 
@@ -86,17 +107,17 @@ const BoardPage: React.FC = () => {
               <Star className="h-3.5 w-3.5" />
             </button>
             {filterOpen && (
-              <FilterPanel onClose={() => setFilterOpen(false)} />
+              <FilterPanel onClose={() => setFilterOpen(false)} currentSpace={currentSpaceId} />
             )}
           </div>
         </div>
 
         {/* Board content */}
-        <div className="flex-1 overflow-hidden flex">
-          <div className="flex flex-1 min-w-0">
-            {/* Left boards */}
-            <div className="flex-1 min-w-0 overflow-auto">
-              {mockBoards.map((board) => (
+        {/* Single scroll area for all boards (no per-board scrollbars) */}
+        <div className="flex-1 overflow-auto flex flex-col">
+          {boardsConfig.mode === 'single' ? (
+            <div className="min-w-0">
+              {boardsConfig.mainBoards.map((board) => (
                 <BoardSection
                   key={board.id}
                   board={board}
@@ -105,16 +126,39 @@ const BoardPage: React.FC = () => {
                 />
               ))}
             </div>
+          ) : (
+            <>
+              {/* Top row: Родитель дочка and Дочки чек-листа - no scroll between them */}
+              <div className="flex min-w-0">
+                {/* Left board: Родитель дочка */}
+                <div className="flex-1 min-w-0 border-r border-border">
+                  <BoardSection
+                    board={boardsConfig.parentBoard}
+                    collapsed={boardStates[boardsConfig.parentBoard.id]}
+                    onToggle={() => toggleBoard(boardsConfig.parentBoard.id)}
+                  />
+                </div>
 
-            {/* Right board: Дочки чек-листа */}
-            <div className="border-l border-border shrink-0 overflow-auto" style={{ width: 420 }}>
-              <BoardSection
-                board={mockChildBoard}
-                collapsed={boardStates[mockChildBoard.id]}
-                onToggle={() => toggleBoard(mockChildBoard.id)}
-              />
-            </div>
-          </div>
+                {/* Right board: Дочки чек-листа */}
+                <div className="shrink-0" style={{ width: 420 }}>
+                  <BoardSection
+                    board={boardsConfig.childBoard}
+                    collapsed={boardStates[boardsConfig.childBoard.id]}
+                    onToggle={() => toggleBoard(boardsConfig.childBoard.id)}
+                  />
+                </div>
+              </div>
+              
+              {/* Bottom board: Перемещение - separated */}
+              <div className="min-w-0 border-t-2 border-border/50">
+                <BoardSection
+                  board={boardsConfig.moveBoard}
+                  collapsed={boardStates[boardsConfig.moveBoard.id]}
+                  onToggle={() => toggleBoard(boardsConfig.moveBoard.id)}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -129,8 +173,11 @@ const BoardSection: React.FC<{
   collapsed: boolean;
   onToggle: () => void;
 }> = ({ board, collapsed, onToggle }) => {
+  // Check if this is one of the boards that should be separated
+  const isSeparatedBoard = board.id === 'board-parent' || board.id === 'board-child-checklist' || board.id === 'board-move';
+  
   return (
-    <div className="border-b border-border">
+    <div className={`${isSeparatedBoard ? 'mb-6 border-b-2 border-border/50' : 'border-b border-border'}`}>
       {/* Board header */}
       <div
         className="flex items-center gap-1.5 px-3.5 py-1.5 cursor-pointer select-none group hover:bg-white/[0.015]"
@@ -160,28 +207,19 @@ const BoardSection: React.FC<{
 
       {/* Expanded content */}
       {!collapsed && (
-        <>
-          <div className="flex">
-            {board.lanes.map((lane) =>
-              lane.columns.map((col) => (
-                <ColumnView key={col.id} column={col} />
-              ))
-            )}
-          </div>
-          {/* Quick add */}
-          <div className="px-3.5 py-2">
-            <input
-              placeholder="Сформулируйте задачу"
-              className="w-full max-w-[300px] rounded bg-secondary px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground outline-none border border-border focus:border-primary transition-colors"
-            />
-          </div>
-        </>
+        <div className="flex">
+          {board.lanes.map((lane) =>
+            lane.columns.map((col) => (
+              <ColumnView key={col.id} column={col} boardId={board.id} />
+            ))
+          )}
+        </div>
       )}
     </div>
   );
 };
 
-const ColumnView: React.FC<{ column: KaitenColumn }> = ({ column }) => {
+const ColumnView: React.FC<{ column: KaitenColumn; boardId: string }> = ({ column, boardId }) => {
   const isOverWip = column.wipLimit && column.wipCurrent !== undefined && column.wipCurrent >= column.wipLimit;
   const isZero = column.wipCurrent === 0;
 
@@ -219,7 +257,7 @@ const ColumnView: React.FC<{ column: KaitenColumn }> = ({ column }) => {
       </div>
 
       {/* Cards */}
-      <div className="flex-1 p-1.5 overflow-y-auto">
+      <div className="flex-1 p-1.5 overflow-y-auto group/cards">
         {column.cards.map((card) => (
           <KanbanCard key={card.id} card={card} />
         ))}
@@ -228,6 +266,13 @@ const ColumnView: React.FC<{ column: KaitenColumn }> = ({ column }) => {
             Нет карточек
           </div>
         )}
+        {/* Quick add button - only visible on hover in area below cards */}
+        <div className="px-1.5 py-2 mt-1 opacity-0 group-hover/cards:opacity-100 transition-opacity pointer-events-none group-hover/cards:pointer-events-auto">
+          <button className="w-full rounded-md bg-primary px-3 py-2 text-xs text-primary-foreground font-medium hover:brightness-110 transition-all flex items-center justify-center gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
+            Сформулировать задачу
+          </button>
+        </div>
       </div>
     </div>
   );

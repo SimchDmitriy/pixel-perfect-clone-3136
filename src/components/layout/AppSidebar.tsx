@@ -181,7 +181,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle }) =
         {/* Quick links */}
         <div className="mb-0.5">
           <button
-            onClick={() => { setSelectedSpace('personal'); navigate('/'); }}
+            onClick={() => { setSelectedSpace('personal'); navigate('/space/personal'); }}
             className={`flex w-full items-center gap-1.5 rounded px-2 py-[3px] text-[12px] transition-colors ${
               selectedSpace === 'personal' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
             }`}
@@ -209,7 +209,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle }) =
               selectedId={selectedSpace}
               onSelect={(id) => {
                 setSelectedSpace(id);
-                if (id === 'parent-child') navigate('/');
+                if (id === 'parent-child') navigate('/space/parent-child');
+                if (id === 'work-search') navigate('/space/work-search');
               }}
               expandedMap={expandedMap}
               onToggleExpand={toggleExpand}

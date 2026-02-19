@@ -21,6 +21,7 @@ const App = () => (
           <Route element={<AppLayout />}>
             <Route path="/" element={<BoardPage />} />
             <Route path="/board" element={<BoardPage />} />
+            <Route path="/space/:spaceId" element={<BoardPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/roles" element={<AdminUsersPage />} />

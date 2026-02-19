@@ -117,6 +117,9 @@ export const mockSpaces: SidebarSpace[] = [
     ],
   },
   {
+    id: 'work-search', name: 'Работа с поиском', icon: 'board', color: 'hsl(210 80% 55%)',
+  },
+  {
     id: 'test-scenarios', name: 'Тест сценариев', icon: 'board', color: 'hsl(210 80% 55%)',
     expanded: true,
     children: [
@@ -141,6 +144,52 @@ export const mockSpaces: SidebarSpace[] = [
     id: 'metafor', name: '🏢 Метафорический USM "Мужчина д...', icon: 'community', color: 'hsl(210 80% 55%)',
   },
 ];
+
+// Board data: space "Работа с поиском"
+export const mockSearchWorkBoard: KaitenBoard = {
+  id: 'board-search-work',
+  title: 'Работа с поиском',
+  cardCount: 9,
+  collapsed: false,
+  lanes: [
+    {
+      id: 'lane-search-default',
+      title: '',
+      columns: [
+        {
+          id: 'search-queue',
+          title: 'Очередь',
+          wipCurrent: 4,
+          cards: [
+            { id: 'sw-q1', title: 'Задача 1', avatarColor: 'hsl(240 5% 55%)' },
+            { id: 'sw-q2', title: 'Тест поиска', avatarColor: 'hsl(240 5% 55%)' },
+            { id: 'sw-q3', title: 'Пустая', avatarColor: 'hsl(240 5% 55%)' },
+            { id: 'sw-q4', title: 'Другое поле', avatarColor: 'hsl(240 5% 55%)' },
+          ],
+        },
+        {
+          id: 'search-inwork',
+          title: 'В работе',
+          wipCurrent: 4,
+          cards: [
+            { id: 'sw-w1', title: 'Задача 2', avatarColor: 'hsl(322 85% 50%)' },
+            { id: 'sw-w2', title: 'Комментарий + описание', avatarColor: 'hsl(322 85% 50%)' },
+            { id: 'sw-w3', title: 'Проверка поисковика', avatarColor: 'hsl(322 85% 50%)' },
+            { id: 'sw-w4', title: 'Работа с файлами', avatarColor: 'hsl(322 85% 50%)' },
+          ],
+        },
+        {
+          id: 'search-done',
+          title: '✓ Готово',
+          wipCurrent: 1,
+          cards: [
+            { id: 'sw-d1', title: 'Без ключевого слова', avatarColor: 'hsl(322 85% 50%)' },
+          ],
+        },
+      ],
+    },
+  ],
+};
 
 // Board data: space "родитель дочка" contains multiple boards
 export const mockBoards: KaitenBoard[] = [
@@ -441,4 +490,30 @@ export const rightSidebarIcons = [
   { id: 'globe', label: 'Публичный доступ', emoji: '🌐' },
   { id: 'share', label: 'Поделиться', emoji: '🔗' },
   { id: 'automation', label: 'Автоматизация', emoji: '🤖' },
+];
+
+// Filter types
+export interface FilterChip {
+  name: string;
+  icon: string;
+}
+
+export interface SavedFilter {
+  id: string;
+  name: string;
+  isPublic: boolean;
+  spaces?: string[];
+  author: 'me' | 'other';
+  highlight?: boolean;
+}
+
+// Mock saved filters
+export const mockMyFilters: SavedFilter[] = [
+  { id: '1', name: 'один участник публичный', isPublic: false, author: 'me' },
+  { id: '2', name: 'один участник', isPublic: false, author: 'me' },
+];
+
+export const mockPublicFilters: SavedFilter[] = [
+  { id: '3', name: 'Командный фильтр', isPublic: true, spaces: ['root'], author: 'other' },
+  { id: '4', name: 'Баги спринта', isPublic: true, spaces: ['demo', 'dynamic'], author: 'other' },
 ];
