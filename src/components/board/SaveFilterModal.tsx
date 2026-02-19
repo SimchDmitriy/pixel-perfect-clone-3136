@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Check } from 'lucide-react';
-import { mockSpaces, type FilterChip } from '@/data/mockData';
-import type { SidebarSpace } from '@/data/mockData';
+import { mockSpaces, type FilterChip, type SidebarSpace } from '@/data/mockData';
+import { useUser } from '@/context/UserContext';
 
 interface SaveFilterModalProps {
   chips: FilterChip[];
@@ -10,8 +10,9 @@ interface SaveFilterModalProps {
 }
 
 export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose, onSave }) => {
+  const { canSavePublicFilter } = useUser();
   const [name, setName] = useState('');
-  const [isPublic, setIsPublic] = useState(true); // Active by default
+  const [isPublic, setIsPublic] = useState(canSavePublicFilter);
   // No preselected spaces (user requested this can be removed)
   const [selectedSpaces, setSelectedSpaces] = useState<string[]>([]);
   const [spaceSearch, setSpaceSearch] = useState('');
@@ -174,7 +175,8 @@ export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose
             />
           </div>
 
-          {/* Public toggle */}
+          {/* Public toggle - only visible for Администратор */}
+          {canSavePublicFilter && (
           <div className="flex items-center justify-between p-3 rounded-lg bg-secondary mb-3">
             <span className="text-xs text-foreground">
               🌐 Публичный <span className="text-[10px] text-muted-foreground">(виден другим)</span>
@@ -186,7 +188,7 @@ export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose
                 setIsPublic((p) => !p);
               }}
               className={`relative w-[38px] h-5 rounded-full transition-colors ${
-                isPublic ? 'bg-blue-500' : 'bg-border'
+                isPublic ? 'bg-primary' : 'bg-border'
               }`}
             >
               <div
@@ -196,6 +198,7 @@ export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose
               />
             </button>
           </div>
+          )}
 
           {/* Space picker (only if public) */}
           {isPublic && (

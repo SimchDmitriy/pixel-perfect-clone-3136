@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, ChevronDown } from 'lucide-react';
-import { mockAdminUsers, mockRoles } from '@/data/mockData';
+import { mockRoles } from '@/data/mockData';
+import { useUser, type UserRole } from '@/context/UserContext';
 
 type AdminTab = 'users' | 'days' | 'roles' | 'groups' | 'access' | 'invites' | 'sessions';
 
@@ -18,12 +19,16 @@ const AdminUsersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('users');
   const [searchQuery, setSearchQuery] = useState('');
   const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [editingRoleUserId, setEditingRoleUserId] = useState<string | null>(null);
+  const { allUsers, updateUserRole } = useUser();
 
-  const filteredUsers = mockAdminUsers.filter(
+  const filteredUsers = allUsers.filter(
     (u) =>
       u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const roleOptions: UserRole[] = ['Администратор', 'Редактор', 'Комментатор'];
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -79,7 +84,7 @@ const AdminUsersPage: React.FC = () => {
             {/* All users */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-foreground font-medium text-sm">Всего: {mockAdminUsers.length}</h3>
+                <h3 className="text-foreground font-medium text-sm">Всего: {allUsers.length}</h3>
                 <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground border border-border rounded px-2 py-1">
                   <Search className="h-3 w-3" />
                   ОТКРЫТЬ ФИЛЬТРЫ
@@ -92,7 +97,7 @@ const AdminUsersPage: React.FC = () => {
                     <th className="py-2 text-left text-xs font-medium text-foreground">Имя пользователя</th>
                     <th className="py-2 text-left text-xs font-medium text-foreground">Эл. почта</th>
                     <th className="py-2 text-left text-xs font-medium text-foreground">Последняя активность</th>
-                    <th className="py-2 text-left text-xs font-medium text-foreground">Доступ</th>
+                    <th className="py-2 text-left text-xs font-medium text-foreground">Роль</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -102,7 +107,30 @@ const AdminUsersPage: React.FC = () => {
                       <td className="py-2.5 text-sm text-muted-foreground">{user.username}</td>
                       <td className="py-2.5 text-sm text-muted-foreground">{user.email}</td>
                       <td className="py-2.5 text-sm text-muted-foreground">{user.lastActive}</td>
-                      <td className="py-2.5 text-sm text-muted-foreground">{user.access}</td>
+                      <td className="py-2.5 text-sm relative">
+                        <button
+                          onClick={() => setEditingRoleUserId(editingRoleUserId === user.id ? null : user.id)}
+                          className="text-muted-foreground hover:text-foreground flex items-center gap-1"
+                        >
+                          {user.role}
+                          <ChevronDown className="h-3 w-3" />
+                        </button>
+                        {editingRoleUserId === user.id && (
+                          <div className="absolute right-0 top-full mt-1 w-[180px] bg-popover border border-border rounded-lg shadow-xl z-50">
+                            {roleOptions.map(role => (
+                              <button
+                                key={role}
+                                onClick={() => { updateUserRole(user.id, role); setEditingRoleUserId(null); }}
+                                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-card-hover transition-colors ${
+                                  user.role === role ? 'text-primary' : 'text-foreground'
+                                }`}
+                              >
+                                {role} {user.role === role && '✓'}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
