@@ -10,7 +10,7 @@ interface SaveFilterModalProps {
 }
 
 export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose, onSave }) => {
-  const { canSavePublicFilter, visibleSpaceIds } = useUser();
+  const { canSavePublicFilter, visibleSpaceIds: userVisibleSpaceIds } = useUser();
   const [name, setName] = useState('');
   const [isPublic, setIsPublic] = useState(canSavePublicFilter);
   // No preselected spaces (user requested this can be removed)
@@ -32,8 +32,8 @@ export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose
   // Expose spaces hierarchy for public filters.
   // Исключаем системные сущности + учитываем ограничения видимости пользователя.
   const EXCLUDED_SPACE_IDS = new Set(['personal', 'favorites', 'folder-1', 'folder-2']);
-  const hasVisibilityLimit = visibleSpaceIds.length > 0;
-  const visibleSet = new Set(visibleSpaceIds);
+  const hasVisibilityLimit = userVisibleSpaceIds.length > 0;
+const visibleSet = new Set(userVisibleSpaceIds);
 
   const pruneForUser = (spaces: SidebarSpace[]): SidebarSpace[] => {
     const result: SidebarSpace[] = [];
@@ -66,7 +66,7 @@ export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose
     ? spacesWithRoot.filter((s) => s.name.toLowerCase().includes(spaceSearch.toLowerCase()))
     : spacesWithRoot;
 
-  const visibleSpaceIds = new Set(allSpaces.map((s) => s.id));
+  const visibleSpaceIdSet = new Set(allSpaces.map((s) => s.id));
 
   // Get descendants of a space
   const getDescendants = (spaceId: string): string[] => {
@@ -98,7 +98,7 @@ export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose
       });
     }
     // Safety: keep only ids that exist in current visible hierarchy
-    return result.filter((id) => visibleSpaceIds.has(id));
+    return result.filter((id) => visibleSpaceIdSet.has(id));
   };
 
   // Toggle space selection with cascade
