@@ -34,6 +34,8 @@ interface UserContextType {
   addSpaceUser: (userId: string) => void;
   removeSpaceUser: (userId: string) => void;
   canSavePublicFilter: boolean;
+  // Какие пространства видит пользователь (ограничения видимости для публичных фильтров и пр.)
+  visibleSpaceIds: string[];
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -50,6 +52,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [spaceUserIds, setSpaceUserIds] = useState<string[]>(['1']); // owner added
 
   const currentUser = users.find(u => u.id === currentUserId) || users[0];
+
+  // Мапа видимости по пользователям.
+  // Петрова Мария (id: 2) — демонстрационный кейс с ограниченной иерархией.
+  const visibilityByUserId: Record<string, string[]> = {
+    '1': [], // владелец видит всё
+    '2': ['work-search', 'test-scenarios', 'parent-child', 'usm', 'scenarios'],
+    // Остальных сейчас не ограничиваем
+  };
+  const visibleSpaceIds = visibilityByUserId[currentUser.id] ?? [];
 
   const updateUserRole = (userId: string, role: UserRole) => {
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
@@ -85,6 +96,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addSpaceUser,
       removeSpaceUser,
       canSavePublicFilter,
+      visibleSpaceIds,
     }}>
       {children}
     </UserContext.Provider>

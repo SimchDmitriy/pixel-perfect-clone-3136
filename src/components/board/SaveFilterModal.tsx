@@ -10,7 +10,7 @@ interface SaveFilterModalProps {
 }
 
 export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose, onSave }) => {
-  const { canSavePublicFilter } = useUser();
+  const { canSavePublicFilter, visibleSpaceIds } = useUser();
   const [name, setName] = useState('');
   const [isPublic, setIsPublic] = useState(canSavePublicFilter);
   // No preselected spaces (user requested this can be removed)
@@ -30,19 +30,32 @@ export const SaveFilterModal: React.FC<SaveFilterModalProps> = ({ chips, onClose
   };
 
   // Expose spaces hierarchy for public filters.
-  // Exclude "personal" and "favorites" from the tree like in the prototype.
+  // Исключаем системные сущности + учитываем ограничения видимости пользователя.
   const EXCLUDED_SPACE_IDS = new Set(['personal', 'favorites', 'folder-1', 'folder-2']);
+  const hasVisibilityLimit = visibleSpaceIds.length > 0;
+  const visibleSet = new Set(visibleSpaceIds);
 
-  const pruneExcluded = (spaces: SidebarSpace[]): SidebarSpace[] => {
-    return spaces
-      .filter((s) => !EXCLUDED_SPACE_IDS.has(s.id))
-      .map((s) => ({
+  const pruneForUser = (spaces: SidebarSpace[]): SidebarSpace[] => {
+    const result: SidebarSpace[] = [];
+    spaces.forEach((s) => {
+      if (EXCLUDED_SPACE_IDS.has(s.id)) return;
+
+      const children = s.children ? pruneForUser(s.children) : undefined;
+
+      const keepByVisibility =
+        !hasVisibilityLimit || visibleSet.has(s.id) || (children && children.length > 0);
+
+      if (!keepByVisibility) return;
+
+      result.push({
         ...s,
-        children: s.children ? pruneExcluded(s.children) : undefined,
-      }));
+        children,
+      });
+    });
+    return result;
   };
 
-  const hierarchyRoots = pruneExcluded(mockSpaces);
+  const hierarchyRoots = pruneForUser(mockSpaces);
   const allSpaces = flattenSpaces(hierarchyRoots);
   // Add root space option
   const spacesWithRoot = [

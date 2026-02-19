@@ -83,7 +83,7 @@ export const mockSpaces: SidebarSpace[] = [
         ],
       },
       {
-        id: 'support', name: '⚙ Служба Поддержки', icon: 'folder', color: 'hsl(142 71% 45%)',
+        id: 'support', name: '⚙ Служба Поддержки', icon: 'board', color: 'hsl(142 71% 45%)',
       },
       { id: 'throughput', name: 'Throughput', icon: 'board', color: 'hsl(270 60% 55%)' },
       { id: 'reports-kanban', name: '📊 Отчеты_Канбан ☑️', icon: 'board', color: 'hsl(210 80% 55%)' },
@@ -93,27 +93,27 @@ export const mockSpaces: SidebarSpace[] = [
       { id: 'legal', name: '🏛 Юр Отдел 🧐', icon: 'board', color: 'hsl(210 80% 55%)' },
       { id: 'presale', name: 'Пресейл', icon: 'board', color: 'hsl(210 80% 55%)' },
       {
-        id: 'shared-boards', name: '🔗Общие/Связанные Доски', icon: 'folder', color: 'hsl(45 93% 47%)',
+        id: 'shared-boards', name: '🔗Общие/Связанные Доски', icon: 'board', color: 'hsl(45 93% 47%)',
       },
       {
-        id: 'it-dev', name: '💻 ИТ и Разработка ПО', icon: 'folder', color: 'hsl(142 71% 45%)',
+        id: 'it-dev', name: '💻 ИТ и Разработка ПО', icon: 'board', color: 'hsl(142 71% 45%)',
       },
       {
-        id: 'heavy-industry', name: '🏭 Тяжелая промышленность', icon: 'folder', color: 'hsl(0 72% 51%)',
+        id: 'heavy-industry', name: '🏭 Тяжелая промышленность', icon: 'board', color: 'hsl(0 72% 51%)',
       },
       {
-        id: 'production', name: '🏭 Производство', icon: 'folder', color: 'hsl(142 71% 45%)',
+        id: 'production', name: '🏭 Производство', icon: 'board', color: 'hsl(142 71% 45%)',
       },
       {
-        id: 'real-estate', name: '🏠 🏗Недвижимость / Строитель...', icon: 'folder', color: 'hsl(210 80% 55%)',
+        id: 'real-estate', name: '🏠 🏗Недвижимость / Строитель...', icon: 'board', color: 'hsl(210 80% 55%)',
       },
       {
-        id: 'knowledge', name: '📚База Знаний 📖', icon: 'globe', color: 'hsl(210 80% 55%)',
+        id: 'knowledge', name: '📚База Знаний 📖', icon: 'board', color: 'hsl(210 80% 55%)',
       },
-      { id: 'root-menu', name: 'Пример корневого меню', icon: 'folder', color: 'hsl(45 93% 47%)' },
-      { id: 'various', name: 'Разное', icon: 'folder', color: 'hsl(322 85% 50%)' },
-      { id: 'custom', name: 'Кастомизации', icon: 'folder', color: 'hsl(45 93% 47%)' },
-      { id: 'community', name: '🏢 Комьюнити', icon: 'community', color: 'hsl(210 80% 55%)' },
+      { id: 'root-menu', name: 'Пример корневого меню', icon: 'board', color: 'hsl(45 93% 47%)' },
+      { id: 'various', name: 'Разное', icon: 'board', color: 'hsl(322 85% 50%)' },
+      { id: 'custom', name: 'Кастомизации', icon: 'board', color: 'hsl(45 93% 47%)' },
+      { id: 'community', name: '🏢 Комьюнити', icon: 'board', color: 'hsl(210 80% 55%)' },
     ],
   },
   {
@@ -417,7 +417,7 @@ export const mockChildBoard: KaitenBoard = {
 
 export const mockAdminUsers: AdminUser[] = [
   { id: '1', fullName: 'Иванов Алексей', username: 'a.ivanov', email: 'a.ivanov@company.ru', lastActive: '18.02.2026 14:30', access: 'Администратор' },
-  { id: '2', fullName: 'Петрова Мария', username: 'm.petrova', email: 'm.petrova@company.ru', lastActive: '17.02.2026 09:15', access: 'Редактор' },
+  { id: '2', fullName: 'Петрова Мария', username: 'm.petrova', email: 'm.petrova@company.ru', lastActive: '17.02.2026 09:15', access: 'Администратор' },
   { id: '3', fullName: 'Сидоров Дмитрий', username: 'd.sidorov', email: 'd.sidorov@company.ru', lastActive: '16.02.2026 18:45', access: 'Комментатор' },
   { id: '4', fullName: 'Козлова Анна', username: 'a.kozlova', email: 'a.kozlova@company.ru', lastActive: '15.02.2026 12:00', access: 'Редактор' },
   { id: '5', fullName: 'Новиков Сергей', username: 's.novikov', email: 's.novikov@company.ru', lastActive: '14.02.2026 16:20', access: 'Комментатор' },
@@ -432,6 +432,27 @@ export const mockRoles = [
   'Пользователь для публичных сущностей',
   'Пользовательские',
 ];
+
+// Visibility profiles for current-user scenarios
+export type VisibilityProfile = 'full' | 'limitedMaria';
+
+// Which spaces are visible for each profile.
+// Empty array = всё доступно.
+export const visibilityAllowedSpacesByProfile: Record<VisibilityProfile, string[]> = {
+  full: [],
+  // Кейс: Петрова Мария — админ, но видит только часть иерархии.
+  // Основные доступные сущности: Работа с поиском + демо-сценарии.
+  limitedMaria: [
+    'work-search',
+    'test-scenarios',
+    'parent-child',
+    'usm',
+    'scenarios',
+  ],
+};
+
+// Текущий профиль видимости (для демонстрации используем кейс Марии).
+export const currentVisibilityProfile: VisibilityProfile = 'limitedMaria';
 
 export const adminMenuItems = [
   'Учёт времени',
