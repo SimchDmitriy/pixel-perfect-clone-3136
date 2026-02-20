@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { mockSpaces, adminMenuItems } from '@/data/mockData';
 import type { SidebarSpace } from '@/data/mockData';
+import { useUser } from '@/context/UserContext';
 
 interface AppSidebarProps {
   collapsed: boolean;
@@ -132,10 +133,33 @@ function buildInitialExpanded(spaces: SidebarSpace[]): Record<string, boolean> {
 export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { visibleSpaceIds } = useUser();
   const [selectedSpace, setSelectedSpace] = useState('parent-child');
   const [adminExpanded, setAdminExpanded] = useState(true);
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>(() => buildInitialExpanded(mockSpaces));
+
+  // Filter spaces by user visibility (empty array = see everything)
+  const hasVisibilityLimit = visibleSpaceIds.length > 0;
+  const visibleSet = new Set(visibleSpaceIds);
+
+  const pruneSpaces = (spaces: SidebarSpace[]): SidebarSpace[] => {
+    if (!hasVisibilityLimit) return spaces;
+    const result: SidebarSpace[] = [];
+    for (const s of spaces) {
+      if (visibleSet.has(s.id)) {
+        result.push(s);
+      } else if (s.children) {
+        const pruned = pruneSpaces(s.children);
+        if (pruned.length > 0) {
+          result.push({ ...s, children: pruned });
+        }
+      }
+    }
+    return result;
+  };
+
+  const filteredSpaces = pruneSpaces(mockSpaces);
 
   const toggleExpand = (id: string) => {
     setExpandedMap(prev => ({ ...prev, [id]: !prev[id] }));
@@ -201,7 +225,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle }) =
 
         {/* Spaces tree */}
         <div className="mb-2">
-          {mockSpaces.filter(s => s.id !== 'personal' && s.id !== 'favorites').map((space) => (
+          {filteredSpaces.filter(s => s.id !== 'personal' && s.id !== 'favorites').map((space) => (
             <SidebarItem
               key={space.id}
               space={space}
