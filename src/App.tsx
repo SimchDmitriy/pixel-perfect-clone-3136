@@ -8,6 +8,7 @@ import { UserProvider } from "@/context/UserContext";
 import BoardPage from "@/pages/BoardPage";
 import AdminUsersPage from "@/pages/AdminUsersPage";
 import ReportsPage from "@/pages/ReportsPage";
+import ReportDetailPage from "@/pages/ReportDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
               <Route path="/board" element={<BoardPage />} />
               <Route path="/space/:spaceId" element={<BoardPage />} />
               <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/reports/:reportId" element={<ReportDetailPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/roles" element={<AdminUsersPage />} />
               <Route path="/admin/*" element={<AdminUsersPage />} />
